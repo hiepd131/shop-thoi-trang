@@ -1,0 +1,17 @@
+{
+    "name": "es/app",
+    "autoload": {
+        "psr-4": {
+            "Es\\App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Hiep Duong",
+            "email": "duonghiep131@gmail.com"
+        }
+    ],
+    "require": {
+        "stripe/stripe-php": "^12.3"
+    }
+}

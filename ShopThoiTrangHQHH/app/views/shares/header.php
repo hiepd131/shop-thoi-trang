@@ -1,4 +1,4 @@
-<?php include_once('../app/models/User.php')?>
+<?php include_once('../app/models/User.php') ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -23,6 +23,7 @@
         a {
             text-decoration: none
         }
+
         .product-quantity {
             text-align: center;
             width: 50px;
@@ -31,7 +32,7 @@
     </style>
 
 
-
+    <script src="https://js.stripe.com/v3/"></script>
     <script src="../app/assets/dest/js/bootstrap.min.js"></script>
     <script src="../app/assets/dest/js/jquery-3.6.4.js"></script>
     <script src="../app/assets/dest/js/my-site.js"></script>
@@ -83,7 +84,7 @@
 						<li><a href="#">Đăng nhập</a></li> -->
                         <?php
                         @session_start();
-                        
+
                         $avatar = $_SESSION['Avatar'] ?? "default.png";
                         if ($avatar == null)
                             $avatar = "default.png";
@@ -138,36 +139,40 @@
 
                     <div class="beta-comp">
                         <div class="cart">
-                        <?php
-                        $sl=0;
-                        $total=0;
-                        if(isset($_SESSION['UserId'])){
-                        if(isset($_SESSION['cart'][$_SESSION['UserId']])){
-                            foreach( $_SESSION['cart'][$_SESSION['UserId']] as $cart){
-                                $sl += intval($cart['soluong']);
+                            <?php
+                            $sl = 0;
+                            $total = 0;
+                            if (isset($_SESSION['UserId'])) {
+                                if (isset($_SESSION['cart'][$_SESSION['UserId']])) {
+                                    foreach ($_SESSION['cart'][$_SESSION['UserId']] as $cart) {
+                                        $sl += intval($cart['soluong']);
+                                    }
+                                }
+                            } else {
+                                $sl = 'Trống';
                             }
-                        }
-                    }    else{$sl='Trống';}
-                    ?>
+                            ?>
                             <div class="beta-select"><i class="fa fa-shopping-cart"></i> Giỏ hàng (<?= $sl ?>) <i class="fa fa-chevron-down"></i></div>
                             <div class="beta-dropdown cart-body" style="width: 370px;">
-                            <?php
-if(isset($_SESSION['UserId'])){
-                            if (isset($_SESSION['cart'][$_SESSION['UserId']])) {
-                                foreach ($_SESSION['cart'][$_SESSION['UserId']] as $cart) {
-                            ?>
-                                <div class="cart-item">
-                                    <div class="media">
-                                        <a class="pull-left" href="#"><img src="../app/uploads/<?= $cart['img']?>" width="50px" height="50px" alt=""></a>
-                                        <div class="media-body">
-                                            <span class="cart-item-title"><?= $cart['ten'] ?></span>
-                                            <span class="cart-item-options">Size: <?= $cart['size']?>; Color: <?= $cart['mau']?></span>
-                                            <span class="cart-item-amount"><?= $cart['soluong']?>*<span>$<?= $cart['gia']?></span></span>
-                                            <?php $total += $cart['soluong'] * $cart['gia']?>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php }} }?>
+                                <?php
+                                if (isset($_SESSION['UserId'])) {
+                                    if (isset($_SESSION['cart'][$_SESSION['UserId']])) {
+                                        foreach ($_SESSION['cart'][$_SESSION['UserId']] as $cart) {
+                                ?>
+                                            <div class="cart-item">
+                                                <div class="media">
+                                                    <a class="pull-left" href="#"><img src="../app/uploads/<?= $cart['img'] ?>" width="50px" height="50px" alt=""></a>
+                                                    <div class="media-body">
+                                                        <span class="cart-item-title"><?= $cart['ten'] ?></span>
+                                                        <span class="cart-item-options">Size: <?= $cart['size'] ?>; Color: <?= $cart['mau'] ?></span>
+                                                        <span class="cart-item-amount"><?= $cart['soluong'] ?>*<span>$<?= $cart['gia'] ?></span></span>
+                                                        <?php $total += $cart['soluong'] * $cart['gia'] ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                <?php }
+                                    }
+                                } ?>
 
                                 <div class="cart-caption">
                                     <div class="cart-total"><a href="?route=view-cart" style="float: right;">Chi tiết<i class="fa fa-chevron-right"></i></a>&nbsp;&nbsp;
@@ -202,11 +207,13 @@ if(isset($_SESSION['UserId'])){
                         </li>
                         <li><a href="?route=about">Giới thiệu</a></li>
                         <li><a href="?route=contact">Liên hệ</a></li>
-                        <?php if (isset($_SESSION['UserId'])) { $user = User::find($_SESSION['UserId']);
-                                            if ($user['Role'] == 1) {
-                                                echo '<li><a href="?route=create-sp">Thêm sản phẩm</a></li>';
-                                            } }?>
-                        
+                        <?php if (isset($_SESSION['UserId'])) {
+                            $user = User::find($_SESSION['UserId']);
+                            if ($user['Role'] == 1) {
+                                echo '<li><a href="?route=create-sp">Thêm sản phẩm</a></li>';
+                            }
+                        } ?>
+
                     </ul>
                     <div class="clearfix"></div>
                 </nav>
