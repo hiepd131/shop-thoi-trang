@@ -6,6 +6,8 @@ require_once('../app/models/Bill.php');
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+require_once('../app/vendor/autoload.php');
+
 require_once('../app/PHPMailer/src/Exception.php');
 require_once('../app/PHPMailer/src/PHPMailer.php');
 require_once('../app/PHPMailer/src/SMTP.php');
@@ -428,55 +430,122 @@ class ProductController
         session_start();
         if (isset($_SESSION['UserId'])) {
             $user = User::find($_SESSION['UserId']);
+
+            $ini = parse_ini_file('../config/app.ini');
+
+            $Total = $_POST['total'];
             if ($_SERVER['REQUEST_METHOD'] == "POST") {
-                $Id_User = $user['UserName'];
-                $Notes = $_POST['notes'];
-                $Payment = $_POST['payment_method'];
-                $Total = $_POST['total'];
+                $Payment = $_POST['payment_method'] ?? "";
+                switch ($Payment) {
+                    case "COD":
+                        $Id_User = $user['UserName'];
+                        $Notes = $_POST['notes'];
+                        
+                        foreach ($_SESSION['cart'][$_SESSION['UserId']] as $cart) {
+                            $Product_T = $cart['ten'];
+                            $Product_M = $cart['mau'];
+                            $Product_S = $cart['size'];
+                            $Product_IMG = $cart['img'];
+                            $Qty = $cart['soluong'];
+                            preg_match('/\d+/', $cart['Id'], $Id_Product);
+                            $product = Product::findProduct($Id_Product[0], $Product_M, $Product_S);
+                            // $substrings will be array("This", "Is", "A", "String", "With", "123", "Numbers")
+                            if ($product['SoLuongSp'] <= 0) {
+                                Bill::create($Id_User, $Id_Product[0], $Product_M, $Product_S, $Qty, $Payment, $Total, $Notes);
+                                $mail = new PHPMailer(true);
+                                // SMTP configuration
+                                $mail->isSMTP();
+                                $mail->Host = $ini['host'];
+                                $mail->SMTPAuth = true;
+                                $mail->Username = $ini['email'];
+                                $mail->Password = $ini['password'];
+                                $mail->SMTPSecure = 'tls';
+                                $mail->Port = $ini['port'];
+                                $mail->addAttachment("../app/uploads/$Product_IMG", 'Hinh anh minh hoa san pham');
 
-                foreach ($_SESSION['cart'][$_SESSION['UserId']] as $cart) {
-                    $Product_M = $cart['mau'];
-                    $Product_S = $cart['size'];
-                    $Qty = $cart['soluong'];
-                    preg_match('/\d+/', $cart['Id'], $Id_Product);
-                    $product = Product::findProduct($Id_Product[0], $Product_M, $Product_S);
-                    $isSuccess = Bill::create($Id_User, $Id_Product[0], $Product_M, $Product_S, $Qty, $Payment, $Total, $Notes);
-                    // $substrings will be array("This", "Is", "A", "String", "With", "123", "Numbers")
-                    if ($isSuccess && $product['SoLuongSp'] <= 0) {
-                        $mail = new PHPMailer(true);
-                        // SMTP configuration
-                        $mail->isSMTP();
-                        $mail->Host = 'smtp.gmail.com';
-                        $mail->SMTPAuth = true;
-                        $mail->Username = 'nrong8480@gmail.com';
-                        $mail->Password = 'ywnoecizelzctkpr';
-                        $mail->SMTPSecure = 'tls';
-                        $mail->Port = 587;
+                                // Sender and recipient settings
+                                $mail->setFrom($ini['email'], $ini['from']);
+                                $mail->addAddress($user['Email'], $user['FullName']);
 
-                        // Sender and recipient settings
-                        $mail->setFrom('nrong8480@gmail.com', 'Shop Thoi Trang HQHH');
-                        $mail->addAddress($user['Email'], $user['FullName']);
+                                // Email content
+                                $mail->isHTML(true);
+                                $mail->Subject = 'Thong bao xac nhan don hang';
+                                $mail->Body = "<h3>Xin chào {$user['FullName']}, rất tiếc khi phải thông báo rằng <strong>$Qty</strong> sản phẩm <strong>$Product_T, Size: $Product_S, Màu: $Product_M</strong> bạn vừa đặt tạm thời đã hết, nếu sản phẩm này có sẵn hàng chúng tôi sẽ gửi thông tin đến bạn hãy giữ liên lạc nhé!</h3><p>Duong Van Hiep.</p>";
 
-                        // Email content
-                        $mail->isHTML(true);
-                        $mail->Subject = 'Thong bao xac nhan don hang';
-                        $mail->Body = '<h3>Xin chào ' . $user['FullName'] . ', rất tiếc khi phải thông báo rằng sản phẩm ' . $cart['ten'] . ' bạn vừa đặt tạm thời đã hết, nếu sản phẩm này có sẵn hàng chúng tôi sẽ gửi thông tin đến bạn hãy giữ liên lạc nhé!</h3><p>Duong Van Hiep.</p>';
+                                // Send email
+                                if ($mail->send()) {
+                                    echo "<script>alert('Email sent successfully.')</script>";
+                                } else {
+                                    echo "<script>alert('Error sending email: '" . $mail->ErrorInfo . ")</script>";
+                                }
+                            }
 
-                        // Send email
-                        if ($mail->send()) {
-                            echo "<script>alert('Email sent successfully.')</script>";
-                        } else {
-                            echo "<script>alert('Error sending email: '" . $mail->ErrorInfo . ")</script>";
+
+
+                            unset($_SESSION['cart'][$_SESSION['UserId']][$cart['Id']]);
                         }
-                    }
-                    unset($_SESSION['cart'][$_SESSION['UserId']][$cart['Id']]);
+                        // Redirect to homepage
+                        // header("Location: ?route=view-cart");
+                        // exit;
+                        break;
+
+                    case "Stripe":
+                        $Id_User = $user['UserName'];
+                        $Notes = $_POST['notes'];
+
+                        foreach ($_SESSION['cart'][$_SESSION['UserId']] as $cart) {
+                            $Product_T = $cart['ten'];
+                            $Product_M = $cart['mau'];
+                            $Product_S = $cart['size'];
+                            $Product_IMG = $cart['img'];
+                            $Qty = $cart['soluong'];
+                            preg_match('/\d+/', $cart['Id'], $Id_Product);
+                            $product = Product::findProduct($Id_Product[0], $Product_M, $Product_S);
+                            if ($product['SoLuongSp'] <= 0) {
+                            Bill::create($Id_User, $Id_Product[0], $Product_M, $Product_S, $Qty, $Payment, $Total=$Total-$product['GiaTienSp'], $Notes);
+                            // $substrings will be array("This", "Is", "A", "String", "With", "123", "Numbers")
+                        }
+
+                            unset($_SESSION['cart'][$_SESSION['UserId']][$cart['Id']]);
+                        }
+                        require_once('../app/views/stripe_payment.php');
+                        break;
                 }
-                // Redirect to homepage
             }
             require_once('../app/views/checkout.php');
         } else {
             header("Location: ?route=login");
             exit;
         }
+    }
+
+    function stripeAjax()
+    {
+        $ini = parse_ini_file('../config/app.ini');
+
+        \Stripe\Stripe::setApiKey($ini['stripe_secret_key']);
+
+        if ($_SERVER['REQUEST_METHOD'] == "POST") {
+            $Total = $_POST['total'];
+            try {
+                // Create a Payment Intent
+                $paymentIntent = \Stripe\PaymentIntent::create([
+                    'amount' => $Total * 24000, // Amount in cents
+                    'currency' => 'vnd'
+                ]);
+
+                // Send the Payment Intent's client secret to the client-side for confirmation
+
+                echo json_encode(['clientSecret' => $paymentIntent->client_secret]);
+
+                // $clientSecret = $paymentIntent->client_secret;
+                // Get your Stripe Publishable Key
+            } catch (\Stripe\Exception\CardException $e) {
+                echo json_encode(['error' => $e->getMessage()]);
+            }
+
+            // header("Location: ../app/views/stripe_payment.php");
+            // exit;
+        } else echo json_encode(['config' => $ini]);
     }
 }

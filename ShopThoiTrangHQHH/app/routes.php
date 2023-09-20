@@ -82,6 +82,10 @@ $routes = [
     'controller' => 'ProductController',
     'action' => 'checkoutCart'
   ],
+  'stripe-ajax' => [
+    'controller' => 'ProductController',
+    'action' => 'stripeAjax'
+  ],
   'statistics' => [
     'controller' => 'ProductController',
     'action' => 'Statistics'

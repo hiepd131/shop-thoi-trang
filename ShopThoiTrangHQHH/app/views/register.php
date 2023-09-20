@@ -36,3 +36,4 @@
       </div>
     </div>
   </div>
+  <?php include_once('../app/views/shares/footer.php')?>

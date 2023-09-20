@@ -1,4 +1,4 @@
-<?php include_once('../app/models/User.php')?>
+<?php include_once('../app/models/User.php') ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -23,47 +23,13 @@
         a {
             text-decoration: none
         }
+
         .product-quantity {
             text-align: center;
             width: 50px;
             font-size: large;
         }
     </style>
-
-
-
-    <script src="../app/assets/dest/js/bootstrap.min.js"></script>
-    <script src="../app/assets/dest/js/jquery-3.6.4.js"></script>
-    <script src="../app/assets/dest/js/my-site.js"></script>
-    <!-- <script src="../app/assets/dest/js/bootstrap.min.js"></script>
-    <script src="../app/assets/dest/js/jquery-3.3.1.min.js"></script> -->
-
-    <script src="../app/assets/dest/js/jquery.js"></script>
-    <script src="../app/assets/dest/vendors/jqueryui/jquery-ui-1.10.4.custom.min.js"></script>
-    <!-- <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script> -->
-    <script src="../app/assets/dest/vendors/bxslider/jquery.bxslider.min.js"></script>
-    <script src="../app/assets/dest/vendors/colorbox/jquery.colorbox-min.js"></script>
-    <script src="../app/assets/dest/vendors/animo/Animo.js"></script>
-    <script src="../app/assets/dest/vendors/dug/dug.js"></script>
-    <script src="../app/assets/dest/js/scripts.min.js"></script>
-    <script src="../app/assets/dest/rs-plugin/js/jquery.themepunch.tools.min.js"></script>
-    <script src="../app/assets/dest/rs-plugin/js/jquery.themepunch.revolution.min.js"></script>
-    <script src="../app/assets/dest/js/waypoints.min.js"></script>
-    <script src="../app/assets/dest/js/wow.min.js"></script>
-    <script src="../app/assets/dest/js/jquery.countTo.js"></script>
-    <!--customjs-->
-    <script src="../app/assets/dest/js/custom2.js"></script>
-    <script>
-        $(document).ready(function($) {
-            $(window).scroll(function() {
-                if ($(this).scrollTop() > 150) {
-                    $(".header-bottom").addClass('fixNav')
-                } else {
-                    $(".header-bottom").removeClass('fixNav')
-                }
-            })
-        })
-    </script>
 </head>
 
 <body>
@@ -83,7 +49,7 @@
 						<li><a href="#">Đăng nhập</a></li> -->
                         <?php
                         @session_start();
-                        
+
                         $avatar = $_SESSION['Avatar'] ?? "default.png";
                         if ($avatar == null)
                             $avatar = "default.png";
@@ -138,36 +104,40 @@
 
                     <div class="beta-comp">
                         <div class="cart">
-                        <?php
-                        $sl=0;
-                        $total=0;
-                        if(isset($_SESSION['UserId'])){
-                        if(isset($_SESSION['cart'][$_SESSION['UserId']])){
-                            foreach( $_SESSION['cart'][$_SESSION['UserId']] as $cart){
-                                $sl += intval($cart['soluong']);
+                            <?php
+                            $sl = 0;
+                            $total = 0;
+                            if (isset($_SESSION['UserId'])) {
+                                if (isset($_SESSION['cart'][$_SESSION['UserId']])) {
+                                    foreach ($_SESSION['cart'][$_SESSION['UserId']] as $cart) {
+                                        $sl += intval($cart['soluong']);
+                                    }
+                                }
+                            } else {
+                                $sl = 'Trống';
                             }
-                        }
-                    }    else{$sl='Trống';}
-                    ?>
+                            ?>
                             <div class="beta-select"><i class="fa fa-shopping-cart"></i> Giỏ hàng (<?= $sl ?>) <i class="fa fa-chevron-down"></i></div>
                             <div class="beta-dropdown cart-body" style="width: 370px;">
-                            <?php
-if(isset($_SESSION['UserId'])){
-                            if (isset($_SESSION['cart'][$_SESSION['UserId']])) {
-                                foreach ($_SESSION['cart'][$_SESSION['UserId']] as $cart) {
-                            ?>
-                                <div class="cart-item">
-                                    <div class="media">
-                                        <a class="pull-left" href="#"><img src="../app/uploads/<?= $cart['img']?>" width="50px" height="50px" alt=""></a>
-                                        <div class="media-body">
-                                            <span class="cart-item-title"><?= $cart['ten'] ?></span>
-                                            <span class="cart-item-options">Size: <?= $cart['size']?>; Color: <?= $cart['mau']?></span>
-                                            <span class="cart-item-amount"><?= $cart['soluong']?>*<span>$<?= $cart['gia']?></span></span>
-                                            <?php $total += $cart['soluong'] * $cart['gia']?>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php }} }?>
+                                <?php
+                                if (isset($_SESSION['UserId'])) {
+                                    if (isset($_SESSION['cart'][$_SESSION['UserId']])) {
+                                        foreach ($_SESSION['cart'][$_SESSION['UserId']] as $cart) {
+                                ?>
+                                            <div class="cart-item">
+                                                <div class="media">
+                                                    <a class="pull-left" href="#"><img src="../app/uploads/<?= $cart['img'] ?>" width="50px" height="50px" alt=""></a>
+                                                    <div class="media-body">
+                                                        <span class="cart-item-title"><?= $cart['ten'] ?></span>
+                                                        <span class="cart-item-options">Size: <?= $cart['size'] ?>; Color: <?= $cart['mau'] ?></span>
+                                                        <span class="cart-item-amount"><?= $cart['soluong'] ?>*<span>$<?= $cart['gia'] ?></span></span>
+                                                        <?php $total += $cart['soluong'] * $cart['gia'] ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                <?php }
+                                    }
+                                } ?>
 
                                 <div class="cart-caption">
                                     <div class="cart-total"><a href="?route=view-cart" style="float: right;">Chi tiết<i class="fa fa-chevron-right"></i></a>&nbsp;&nbsp;
@@ -202,14 +172,17 @@ if(isset($_SESSION['UserId'])){
                         </li>
                         <li><a href="?route=about">Giới thiệu</a></li>
                         <li><a href="?route=contact">Liên hệ</a></li>
-                        <?php if (isset($_SESSION['UserId'])) { $user = User::find($_SESSION['UserId']);
-                                            if ($user['Role'] == 1) {
-                                                echo '<li><a href="?route=create-sp">Thêm sản phẩm</a></li>';
-                                            } }?>
-                        
+                        <?php if (isset($_SESSION['UserId'])) {
+                            $user = User::find($_SESSION['UserId']);
+                            if ($user['Role'] == 1) {
+                                echo '<li><a href="?route=create-sp">Thêm sản phẩm</a></li>';
+                            }
+                        } ?>
+
                     </ul>
                     <div class="clearfix"></div>
                 </nav>
             </div> <!-- .container -->
         </div> <!-- .header-bottom -->
     </div> <!-- #header -->
+    <div id="content-container">
