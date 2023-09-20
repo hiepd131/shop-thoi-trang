@@ -165,3 +165,159 @@ $(document).ready(function () {
 //         }
 //     });
 // });
+
+// Set your Stripe Publishable Key dynamically using a PHP variable
+
+// Function to make an AJAX request
+// function getConfig(callback) {
+//     debugger;
+//     $.ajax({
+//         url: '?route=stripe-ajax',
+//         type: 'POST',
+//         // dataType:'JSON',
+//         success: function (response) {
+//             var data = JSON.parse(response);
+//             callback(data.config);
+//         },
+//         error: function (error) {
+//             console.error('Error fetching ini config:', error);
+//         }
+//     });
+// }
+
+// getConfig(function (config) {
+//     // Now you can access individual properties like config.publishableKey
+//     var stripe = Stripe(config.stripe_api_key);
+//     // You can access other properties in the same way
+//     // Create an instance of Elements.
+//     var elements = stripe.elements();
+
+//     var cardNumber = elements.create('cardNumber');
+
+//     // Create an instance of the card Element for card expiry.
+//     var cardExpiry = elements.create('cardExpiry');
+
+//     // Create an instance of the card Element for card CVC.
+//     var cardCvc = elements.create('cardCvc');
+
+//     // Add the card Number Element into the `card-number` div.
+//     cardNumber.mount('#card-number');
+
+//     // Add the card Expiry Element into the `card-expiry` div.
+//     cardExpiry.mount('#card-expiry');
+
+//     // Add the card CVC Element into the `card-cvc` div.
+//     cardCvc.mount('#card-cvc');
+
+//     // Handle real-time validation errors from the card Element.
+//     cardNumber.addEventListener('change', function (event) {
+//         var displayError = document.getElementById('card-errors');
+//         if (event.error) {
+//             displayError.textContent = event.error.message;
+//         } else {
+//             displayError.textContent = '';
+//         }
+//     });
+// });
+
+// Check if this is the checkout page
+// Load the config data via AJAX
+$(document).ready(function () {
+    // Your JavaScript code here
+    if (document.getElementById("card-number")){
+    $.ajax({
+        url: '?route=stripe-ajax', // Adjust the URL as needed
+        type: 'GET',
+        // dataType:'JSON',
+        success: function (response) {
+            var data = JSON.parse(response);
+            var config = data.config;
+
+            // Now you can access individual properties like config.publishableKey
+            var stripe = Stripe(config.stripe_api_key);
+            // You can access other properties in the same way
+            // Create an instance of Elements.
+            var elements = stripe.elements();
+
+            var cardNumber = elements.create('cardNumber');
+
+            // Create an instance of the card Element for card expiry.
+            var cardExpiry = elements.create('cardExpiry');
+
+            // Create an instance of the card Element for card CVC.
+            var cardCvc = elements.create('cardCvc');
+
+            // Add the card Number Element into the `card-number` div.
+            cardNumber.mount('#card-number');
+
+            // Add the card Expiry Element into the `card-expiry` div.
+            cardExpiry.mount('#card-expiry');
+
+            // Add the card CVC Element into the `card-cvc` div.
+            cardCvc.mount('#card-cvc');
+
+            // Handle real-time validation errors from the card Element.
+            cardNumber.addEventListener('change', function (event) {
+                var displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+            function redirectToPage() {
+                window.location.href="?route=view-cart";
+            }
+            
+            $('#submit-payment').on('click', function (event) {
+                // Prevent the form from submitting before confirming the payment
+                event.preventDefault();
+            
+                // Fetch the client secret from the server using AJAX
+                var Total = $(this).data('total');
+                $.ajax({
+                    type: 'POST',
+                    url: '?route=stripe-ajax',
+                    data: { total: Total },
+                    success: function (response) {
+                        var data = JSON.parse(response);
+                        // Use the client secret to confirm the payment
+                        stripe.confirmCardPayment(data.clientSecret, {
+                            payment_method: {
+                                card: cardNumber,
+                            },
+                        }).then(function (result) {
+                            if (result.error) {
+                                // Display any errors to the customer
+                                var errorElement = document.getElementById('card-errors');
+                                errorElement.textContent = result.error.message;
+                            } else {
+                                // Payment is successful, you can redirect or show a success message
+                                // console.log(result.paymentIntent);
+                                $('#content-container').html('<body><div class="row justify-content-center"><div class="col-6 mt-5 text-center"><img class="my-5 img-fluid d-block mx-auto" src="../app/assets/dest/images/order_success.png" alt="Order Success" width="200" height="200" /><h2>Đơn hàng của bạn đã được đặt thành công!</h2><a href="?route=view-cart">Tự động chuyển hướng tới hóa đơn sau 5 giây ...</a></div></div>');
+                                setTimeout(redirectToPage, 5000);
+                            }
+                        });
+                    },
+                    error: function (error) {
+                        console.error('Error fetching client secret:', error);
+                    }
+                });
+            });
+        },
+        error: function (error) {
+            console.error('Error fetching ini config:', error);
+        }
+    });}
+});
+
+
+// Other JavaScript code for the entire website
+// Use the function to get the entire config
+
+
+// Load Stripe.js with your Publishable Key
+// var stripe = Stripe('<?=$publishableKey?>');
+
+
+

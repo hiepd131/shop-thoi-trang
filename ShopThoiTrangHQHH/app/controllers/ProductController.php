@@ -431,16 +431,16 @@ class ProductController
         if (isset($_SESSION['UserId'])) {
             $user = User::find($_SESSION['UserId']);
 
-            $Payment = $_POST['payment_method'] ?? "";
             $ini = parse_ini_file('../config/app.ini');
 
-            switch ($Payment) {
-                case "COD":
-                    if ($_SERVER['REQUEST_METHOD'] == "POST") {
+            $Total = $_POST['total'];
+            if ($_SERVER['REQUEST_METHOD'] == "POST") {
+                $Payment = $_POST['payment_method'] ?? "";
+                switch ($Payment) {
+                    case "COD":
                         $Id_User = $user['UserName'];
                         $Notes = $_POST['notes'];
-                        $Total = $_POST['total'];
-
+                        
                         foreach ($_SESSION['cart'][$_SESSION['UserId']] as $cart) {
                             $Product_T = $cart['ten'];
                             $Product_M = $cart['mau'];
@@ -449,9 +449,9 @@ class ProductController
                             $Qty = $cart['soluong'];
                             preg_match('/\d+/', $cart['Id'], $Id_Product);
                             $product = Product::findProduct($Id_Product[0], $Product_M, $Product_S);
-                            $isSuccess = Bill::create($Id_User, $Id_Product[0], $Product_M, $Product_S, $Qty, $Payment, $Total, $Notes);
                             // $substrings will be array("This", "Is", "A", "String", "With", "123", "Numbers")
-                            if ($isSuccess && $product['SoLuongSp'] <= 0) {
+                            if ($product['SoLuongSp'] <= 0) {
+                                Bill::create($Id_User, $Id_Product[0], $Product_M, $Product_S, $Qty, $Payment, $Total, $Notes);
                                 $mail = new PHPMailer(true);
                                 // SMTP configuration
                                 $mail->isSMTP();
@@ -487,22 +487,38 @@ class ProductController
                         // Redirect to homepage
                         // header("Location: ?route=view-cart");
                         // exit;
-                    }
-                    break;
+                        break;
 
-                case "Stripe":
-                    $publishableKey = $ini['stripe_api_key'];
-                    require_once('../app/views/stripe_payment.php');
-                    break;
+                    case "Stripe":
+                        $Id_User = $user['UserName'];
+                        $Notes = $_POST['notes'];
 
-                default:
-                    require_once('../app/views/checkout.php');
+                        foreach ($_SESSION['cart'][$_SESSION['UserId']] as $cart) {
+                            $Product_T = $cart['ten'];
+                            $Product_M = $cart['mau'];
+                            $Product_S = $cart['size'];
+                            $Product_IMG = $cart['img'];
+                            $Qty = $cart['soluong'];
+                            preg_match('/\d+/', $cart['Id'], $Id_Product);
+                            $product = Product::findProduct($Id_Product[0], $Product_M, $Product_S);
+                            if ($product['SoLuongSp'] <= 0) {
+                            Bill::create($Id_User, $Id_Product[0], $Product_M, $Product_S, $Qty, $Payment, $Total=$Total-$product['GiaTienSp'], $Notes);
+                            // $substrings will be array("This", "Is", "A", "String", "With", "123", "Numbers")
+                        }
+
+                            unset($_SESSION['cart'][$_SESSION['UserId']][$cart['Id']]);
+                        }
+                        require_once('../app/views/stripe_payment.php');
+                        break;
+                }
             }
+            require_once('../app/views/checkout.php');
         } else {
             header("Location: ?route=login");
             exit;
         }
     }
+
     function stripeAjax()
     {
         $ini = parse_ini_file('../config/app.ini');
@@ -510,15 +526,16 @@ class ProductController
         \Stripe\Stripe::setApiKey($ini['stripe_secret_key']);
 
         if ($_SERVER['REQUEST_METHOD'] == "POST") {
-
+            $Total = $_POST['total'];
             try {
                 // Create a Payment Intent
                 $paymentIntent = \Stripe\PaymentIntent::create([
-                    'amount' => 14000, // Amount in cents
+                    'amount' => $Total * 24000, // Amount in cents
                     'currency' => 'vnd'
                 ]);
 
                 // Send the Payment Intent's client secret to the client-side for confirmation
+
                 echo json_encode(['clientSecret' => $paymentIntent->client_secret]);
 
                 // $clientSecret = $paymentIntent->client_secret;
@@ -529,6 +546,6 @@ class ProductController
 
             // header("Location: ../app/views/stripe_payment.php");
             // exit;
-        }
+        } else echo json_encode(['config' => $ini]);
     }
 }
