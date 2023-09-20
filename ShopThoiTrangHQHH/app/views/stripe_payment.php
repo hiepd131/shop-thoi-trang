@@ -37,85 +37,14 @@
                                 </div>
                             </div>
                             <div id="card-errors" role="alert"></div>
-                            <button id="submit-payment" type="submit" class="btn btn-block btn-primary py-3 w-100">
-                                Thanh toán - <span id="totalPrice"></span>đ
+                            <button id="submit-payment" type="submit" class="btn btn-block btn-primary py-3 w-100" data-total="<?=$Total?>">
+                                Thanh toán - <?=$Total?>$
                             </button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-
-    <script>
-        // Set your Stripe Publishable Key dynamically using a PHP variable
-        var publishableKey = '<?php echo $publishableKey; ?>';
-    
-        // Load Stripe.js with your Publishable Key
-        var stripe = Stripe(publishableKey);
-    
-        // Create an instance of Elements.
-        var elements = stripe.elements();
-    
-        var cardNumber = elements.create('cardNumber');
-    
-        // Create an instance of the card Element for card expiry.
-        var cardExpiry = elements.create('cardExpiry');
-    
-        // Create an instance of the card Element for card CVC.
-        var cardCvc = elements.create('cardCvc');
-    
-        // Add the card Number Element into the `card-number` div.
-        cardNumber.mount('#card-number');
-    
-        // Add the card Expiry Element into the `card-expiry` div.
-        cardExpiry.mount('#card-expiry');
-    
-        // Add the card CVC Element into the `card-cvc` div.
-        cardCvc.mount('#card-cvc');
-    
-        // Handle real-time validation errors from the card Element.
-        cardNumber.addEventListener('change', function(event) {
-            var displayError = document.getElementById('card-errors');
-            if (event.error) {
-                displayError.textContent = event.error.message;
-            } else {
-                displayError.textContent = '';
-            }
-        });
-        </script>
-        <script>
-        $('#submit-payment').on('click', function() {
-            // Prevent the form from submitting before confirming the payment
-            event.preventDefault();
-
-            // Fetch the client secret from the server using AJAX
-            $.ajax({
-                type: 'POST',
-                url: '?route=stripe',
-                success: function(response) {
-                    var data = JSON.parse(response);
-                    // Use the client secret to confirm the payment
-                    stripe.confirmCardPayment(data.clientSecret, {
-                        payment_method: {
-                            card: cardNumber,
-                        },
-                    }).then(function(result) {
-                        if (result.error) {
-                            // Display any errors to the customer
-                            var errorElement = document.getElementById('card-errors');
-                            errorElement.textContent = result.error.message;
-                        } else {
-                            // Payment is successful, you can redirect or show a success message
-                            console.log(result.paymentIntent);
-                        }
-                    });
-                },
-                error: function(error) {
-                    console.error('Error fetching client secret:', error);
-                }
-            });
-        });
-    </script>
     </div>
 </body>
 

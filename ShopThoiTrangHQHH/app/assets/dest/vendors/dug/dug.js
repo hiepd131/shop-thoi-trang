@@ -134,9 +134,10 @@ var dug = function( opts ){
 				get.onerror = options.error;
 			if( cachedData = cache(url) ){
 				dug[callkey](cachedData,true);
-			}else{
-				get.src = url + (url.indexOf('?') > -1? '&': '?') + options.callbackParam + '=dug.' + callkey;
-				document.getElementsByTagName('head')[0].appendChild(get);
+			}
+			else{
+				// get.src = url + (url.indexOf('?') > -1? '&': '?') + options.callbackParam + '=dug.' + callkey;
+				// document.getElementsByTagName('head')[0].appendChild(get);
 			}
 		},
 		init = function( opts ){

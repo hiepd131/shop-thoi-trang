@@ -3,13 +3,11 @@
 <div class="container">
 	<div id="content">
 
-		<form action="#" method="post" class="beta-form-checkout">
+		<form method="post" id="checkout-form" class="beta-form-checkout">
 			<div class="row">
 				<div class="col-sm-6">
 					<h4>Billing Address</h4>
 					<div class="space20">&nbsp;</div>
-
-					<form id="checkout-form">
 
 						<div class="form-block">
 							<label for="your_full_name">Full name*</label>
@@ -75,7 +73,7 @@
 								<input type="hidden" value="<?= $cart['Id'] ?>">
 								<!-- <div class="space20">&nbsp;</div> -->
 								<div class="pull-right">
-									<h5 class="color-black text-danger" >$<?= $total ?></h5>
+									<h5 class="color-black text-danger">$<?= $total ?></h5>
 									<input type="hidden" name="total" value="<?= $total ?>">
 								</div>
 								<div class="clearfix"></div>
@@ -115,10 +113,10 @@
 
 						<div class="text-center"><button class="beta-btn primary" type="submit" id="checkout">Checkout <i class="fa fa-chevron-right"></i></button></div>
 		</form>
+
 	</div> <!-- .your-order -->
 </div>
 </div>
-</form>
 </div> <!-- #content -->
 </div> <!-- .container -->
 <?php include_once('../app/views/shares/footer.php') ?>
